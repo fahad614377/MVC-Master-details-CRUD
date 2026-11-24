@@ -1,0 +1,89 @@
+﻿@model IEnumerable<test111.Models.Member>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<div class="d-flex justify-content-end mb-3">
+    <a class="btn btn-success" href="@Url.Action("Create")">Add New Member</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>
+            Member Name
+        </th>
+        <th>
+            Mobile No
+        </th>
+        <th>
+            Membership Fee
+        </th>
+        <th>
+            Issue Date
+        </th>
+        <th>
+            IsStudent
+        </th>
+
+        <th>
+            Category
+        </th>
+        <th>
+            Borrowed Item
+        </th>
+        <th>
+            Image
+        </th>
+        <th>
+            Action
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.MemberName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MobileNo)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MembershipFee)
+        </td>
+        <td>
+            @*@Html.DisplayFor(modelItem => item.IssueDate, "{0:yyyy-MM-dd}")*@
+            @(item.IssueDate != null ? item.IssueDate.ToString("yyyy-MM-dd") : "")
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsStudent)
+         
+        </td>
+
+        <td>
+            @Html.DisplayFor(modelItem => item.Category.CategoryName)
+        </td>
+        <td>
+            @foreach (var i in item.BorrowedItems)
+            {
+                <ul>
+                    <li>
+                        @i.BookName -- @i.AuthorName
+                    </li>
+                </ul>
+            }
+        </td>
+        <td>
+            <img src="@item.ImageUrl" height="90" width="90" class="img-thumbnail" />
+        </td>
+        <td>
+            @*@Html.ActionLink("Delete", "Delete", new { id = item.MemberId }, new { @class = "btn btn-danger" })*@
+
+            <a href="@Url.Action("Edit", new {id = item.MemberId})" class="btn btn-primary">Edit</a>
+            <a onclick="return confirm('Are you sure to delete this Record?')" href="@Url.Action("Delete", new {id = item.MemberId})" class="btn btn-danger">Delete</a>
+        </td>
+    </tr>
+}
+
+</table>

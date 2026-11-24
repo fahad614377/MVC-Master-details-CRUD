@@ -1,0 +1,173 @@
+﻿@model test111.ViewModels.MemberViewModel
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit</h2>
+<div class="d-flex justify-content-center align-items-center my-4">
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Edit Member
+            </div>
+            <div class="card-body">
+                @using (Ajax.BeginForm("Edit", "Members", new AjaxOptions { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnFailure = "OnFailure" }, new { enctype = "multipart/form-data", id = "memberForm" }))
+                {
+                    @Html.HiddenFor(model => model.MemberId)
+                    <input type="hidden" name="OldImageUrl" value="@Model.ImageUrl" />
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.MemberName, new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.MemberName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.MemberName, "", new { @class = "text-danger" })
+
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.MobileNo, new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.MobileNo, "", new { @class = "text-danger" })
+
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.MembershipFee, new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.MembershipFee, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.MembershipFee, "", new { @class = "text-danger" })
+
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.IssueDate, new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.IssueDate, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.IssueDate, "", new { @class = "text-danger" })
+
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.IsStudent, new { @class = "control-label " })
+                                <div class="checkbox">
+                                    @Html.EditorFor(model => model.IsStudent)
+                                    @Html.ValidationMessageFor(model => model.IsStudent, "", new { @class = "text-danger" })
+
+                                </div>
+
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.CategoryId, new { @class = "control-label" })
+
+                                @Html.DropDownList("CategoryId", null, "----Select----", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
+
+                            </div>
+
+                            <div class="mb-3">
+                                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? Url.Content("~/images/no-image.png") : Url.Content(Model.ImageUrl))" id="imagePreview" height="90" width="90" /><br />
+                                <label for="img">Upload</label>
+                                <input type="file" style="display:none" name="ProfileFile" id="img" onchange="ShowImage(this)" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-primary mb-4" onclick="AddItem()">Add Item</button>
+                            <div>
+                                @Html.Partial("~/Views/Shared/_Borrow.cshtml", Model.BorrowedItems ?? new List<test111.Models.BorrowedItem>())
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mb-3 gap-2">
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">Back To List</a>
+                            <button type="submit" id="btnSave" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.7.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<script>
+    function ShowImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $("#imagePreview").attr('src', e.target.result)
+            }
+            reader.readAsDataURL(input.files[0])
+        }
+    }
+
+    function AddItem() {
+        var $tbody = $("#borrowTable tbody");
+        var index = $tbody.find("tr").length;
+        var rows = `  <tr>
+           <td>
+               <input type="hidden" name="BorrowedItems[${index}].BorrowedId" value="0" />
+               <input type="text" name="BorrowedItems[${index}].BookName"/>
+           </td>
+           <td>
+
+               <input type="text" name="BorrowedItems[${index}].AuthorName"  />
+           </td>
+           <td>
+              <button type="button" class="btn btn-danger btnRemove">Remove</button>
+           </td>
+       </tr>`
+        $tbody.append(rows);
+    }
+
+    $(document).ready(function () {
+        $(document).on('click', ".btnRemove", function () {
+            $(this).closest("tr").remove();
+            reIndexTableRows();
+        })
+
+        function reIndexTableRows() {
+            $("#borrowTable tbody tr").each(function (rowIndex, trElement) {
+                $(trElement).find("input").each(function () {
+                    var currentName = $(this).attr("name");
+
+                    if (currentName) {
+                        var calculateName = currentName.replace(/\[\d+\]/, '[' + rowIndex + ']');
+                        $(this).attr("name", calculateName);
+                    }
+                })
+            })
+        }
+    });
+
+    function OnBegin(xhr, settings) {
+        var form = $("#memberForm");
+        $("#btnSave").prop('disabled', true).text("Saving..");
+        var formData = new FormData(form[0]);
+        settings.processData = false;
+        settings.contentType = false;
+
+        //var form = $('#memberForm');
+        //if (!form.valid()) {
+        //    return false;
+        //}
+        //$("#btnSave").prop('disabled', true).text("Saving....");
+        //var formData = new FormData(form[0]);
+        //settings.data = formData;
+        //settings.processData = false;
+        //settings.contentType = false;
+    }
+
+    function OnSuccess(res) {
+        alert("Successfull");
+        window.location.href = "/Members/Index";
+
+    }
+    function OnFailure(xhr) {
+        alert("Error Occuered.Status code:" + xhr.status);
+
+
+    }
+</script>
+
+
+
