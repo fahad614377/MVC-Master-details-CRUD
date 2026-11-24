@@ -1,4 +1,3 @@
-# MVC-Master-details-CRUD
 # MVC Master-Details CRUD
 
 A master-details CRUD web application built with **ASP.NET MVC 5**, **Entity Framework 6 (Code First)** and **jQuery Ajax**. It manages library members (master) together with their borrowed items (details), with seamless no-page-reload updates.
